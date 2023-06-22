@@ -1,0 +1,132 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layout/main.html">
+
+<div class="container" layout:fragment="page-content" id="liveAlertPlaceholder">
+    <div class="row">
+<!--Order-panel-->
+        <div class="col-3">
+            <div class="container mt-3">
+                <div class="form-group">
+                    <h6>Итого к оплате:</h6>
+                    <h4 th:text="'KZT ' + ${totalSumToPay}" style="color: green"></h4>
+                </div>
+                <div class="row">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                        Оформить заказ</button>
+                </div>
+            </div>
+        </div>
+<!--Items-list-->
+        <div class="col-9" style="min-height: 450px">
+            <div class="row target">
+                <input type="hidden" th:value="${#authentication.principal.email}" id="userEmail" name="userEmail">
+            </div>
+        </div>
+    </div>
+<!-- Modal -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
+         tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Оформление заказа</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="row">
+                            <div class="form-group">
+                                <h6>Укажие ваш адрес:</h6>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" >
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="liveAlertBtn">
+                        Заказать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<!--AJAX-GET-->
+    <script>
+        loadContent();
+        function loadContent() {
+            const request = new XMLHttpRequest();
+            request.onreadystatechange = function () {
+                if (this.readyState === request.DONE && this.status == 200) {
+                    let itemsList = JSON.parse(request.responseText);
+                    const target = document.querySelector('.target');
+                    for (let i = 0; i < itemsList.length; i++) {
+                        let htmlCode = "";
+                        htmlCode = htmlCode + "<div>";
+                            htmlCode = htmlCode + "<div class='card mt-3 target card-body d-flex flex-column' style='height: 300px'>";
+                                htmlCode = htmlCode + "<input type='hidden' value='" + itemsList[i].id + "' id='itemIdInp'>";
+                                htmlCode = htmlCode + "<h6 class='card-title' style='height: 50px'>" + itemsList[i].name + "</h6>";
+                                htmlCode = htmlCode + "<div class='row' style='height: 100px'>";
+                                    htmlCode = htmlCode + `<img src='/${itemsList[i].name + itemsList[i].id}.jpg' class='img-fluid' style='max-height: 100%; max-width: 100%; object-fit: contain;'>`;
+                                htmlCode = htmlCode + "</div>";
+                                htmlCode = htmlCode + "<h6 class='card-title' style='color: grey'>" + 'Цена: KZT' + ' ' + itemsList[i].price.toLocaleString('ru') + "</h6>";
+                                htmlCode = htmlCode + "<span class='card-discount'>" + 'Скидка:' + ' ' + "<span style='color: red'>" + itemsList[i].discount + '%' + "</span>" + "</span>";
+                                htmlCode = htmlCode + "<h6 class='card-title' style='color: green'>" + 'Итоговая цена: KZT' + ' ' + itemsList[i].discountPrice.toLocaleString('ru') + "</h6>";
+                                htmlCode = htmlCode + "<button class='btn btn-danger btn-sm mt-auto' onclick='sendDelete(event)'>" + 'Удалить из корзины' + "</button>";
+                            htmlCode = htmlCode + "</div>";
+                        htmlCode = htmlCode + "</div>";
+                        let newDiv = document.createElement('div');
+                        newDiv.innerHTML = htmlCode;
+                        newDiv.classList.add('col-md-4')
+                        target.append(newDiv);
+                    }
+                }
+            };
+            const userEmail = document.getElementById("userEmail").value;
+            request.open("GET", "/order/" + userEmail);
+            request.send();
+        }
+    </script>
+<!--AJAX-DELETE-->
+    <script>
+        function sendDelete(event) {
+            const request = new XMLHttpRequest();
+            const userEmail = document.getElementById("userEmail").value;
+            request.onreadystatechange = function () {
+                if (this.readyState === request.DONE && this.status == 200) {
+                    window.location.href="/main/order/" + userEmail;
+                }
+            };
+            const itemId = event.target.closest('.target').querySelector("#itemIdInp");
+            var csrfToken = document.querySelector('meta[name="_csrf"]').content;
+            var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+            request.open("DELETE", "/order/" + itemId.value);
+            request.setRequestHeader(csrfHeader, csrfToken);
+            request.send();
+        }
+    </script>
+    <script>
+        const alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+        const appendAlert = (message, type) => {
+            const wrapper = document.createElement('div')
+            wrapper.innerHTML = [
+                `<div class="alert alert-${type} alert-dismissible" role="alert">`,
+                `   <div>${message}</div>`,
+                '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+                '</div>'
+            ].join('')
+
+            alertPlaceholder.append(wrapper)
+        }
+        const alertTrigger = document.getElementById('liveAlertBtn')
+        if (alertTrigger) {
+            alertTrigger.addEventListener('click', () => {
+                appendAlert('Здорово! Благодарим за ваш заказ! Мы доставим вам товар в удобное для вас время.' +
+                    ' Успшеного вам дня!', 'success')
+            })
+        }
+    </script>
+</div>
+</html>

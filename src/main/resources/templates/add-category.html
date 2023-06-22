@@ -1,0 +1,70 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layout/main.html"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+    <div class="container" layout:fragment="page-content">
+        <div class="container">
+            <div class="row mt-3">
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">НАИМЕНОВАНИЕ КАТЕГОРИИ:</label>
+                    <input type="text" class="form-control" name="name" id="categoryNameInp">
+                </div>
+                <p></p>
+                <div class="form-group">
+                    <button class="btn btn-success" onclick="addPost()" sec:authorize="hasAnyRole('ROLE_ADMIN')">
+                        ДОБАВИТЬ КАТЕГОРИЮ</button>
+                </div>
+            </div>
+        </div>
+        <div class="container form-control mt-3">
+            <div class="row">
+                <h4>Текущие категории</h4>
+            </div>
+            <div class="row">
+                <div class="col-md-3 m-3" th:each="cat:${categoryDtoList}">
+                    <div class="input-group" >
+                        <a class="btn btn-primary rounded-0" th:text="${cat.name}"></a>
+                        <input type="hidden" th:value="${cat.id}" id="categoryIdInp">
+                        <button class="btn btn-primary rounded-0" id="deleteButton" onclick="sendDelete(event)">X</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+<!--AJAX-DELETE-->
+        <script>
+            function sendDelete(event) {
+                const request = new XMLHttpRequest();
+                request.onreadystatechange = function () {
+                    if (this.readyState === request.DONE && this.status == 200) {
+                        window.location.href="/main/add-category";
+                    }
+                };
+                const el =  event.target.closest('.input-group').querySelector("#categoryIdInp");
+                var csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                request.open("DELETE", "/category/" + el.value);
+                request.setRequestHeader(csrfHeader, csrfToken);
+                request.send();
+            }
+        </script>
+<!--AJAX-POST-->
+        <script>
+            function addPost() {
+                const request = new XMLHttpRequest();
+                request.onreadystatechange = function () {
+                    if (this.readyState === request.DONE && this.status == 200) {
+                        window.location.href="/main/add-category";
+                    }
+                };
+                let requestBody = {"name": categoryNameInp.value};
+                request.open("POST", "/category");
+                var csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                request.setRequestHeader(csrfHeader, csrfToken);
+                request.setRequestHeader("Content-Type", "application/json;charset=UTF-8")
+                request.send(JSON.stringify(requestBody));
+            }
+        </script>
+    </div>
+</html>

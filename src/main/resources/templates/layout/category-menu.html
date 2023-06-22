@@ -1,0 +1,9 @@
+<!--Category-menu-->
+    <div class="list-group mt-3">
+        <h5>Категории товаров:</h5>
+        <a class="btn list-group-item list-group-item-action" th:href="@{'/main/home'}">Все товары</a>
+        <form th:action="@{'/main/home-sort-by-category'}" method="get" th:each="cat:${categoryList}" style="display: inline-block; margin-bottom: 0;">
+            <input type="hidden" th:value="${cat.getId()}" name="categoryId" >
+            <button class="btn list-group-item list-group-item-action" th:text="${cat.getName()}" ></button>
+        </form>
+    </div>

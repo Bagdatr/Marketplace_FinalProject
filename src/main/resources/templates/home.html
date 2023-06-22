@@ -1,0 +1,116 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layout/main.html">
+
+    <div class="container" layout:fragment="page-content">
+        <div class="row">
+<!--Category-menu-->
+            <div class="col-3">
+                <div th:insert="layout/category-menu.html"></div>
+            </div>
+<!--Items-list-->
+            <div class="col-9" style="min-height: 450px">
+                <div class="row target">
+                    <input type="hidden" th:value="${#authentication.principal.email}" id="userEmail" name="userEmail">
+                </div>
+            </div>
+        </div>
+<!--AJAX-GET-->
+        <script>
+            loadContent();
+            function loadContent() {
+                const request = new XMLHttpRequest();
+                request.onreadystatechange = function () {
+                    if (this.readyState === request.DONE && this.status == 200) {
+                        let itemsList = JSON.parse(request.responseText);
+                        const target = document.querySelector('.target');
+                        for (let i = 0; i < itemsList.length; i++) {
+                            let htmlCode = "";
+                            htmlCode = htmlCode + "<div>";
+                                htmlCode = htmlCode + "<div class='card mt-3 target card-body d-flex flex-column' " +
+                                    "style='height: 600px'>";
+                                    htmlCode = htmlCode + "<div class='container' style='height: 170px'>";
+                                        htmlCode = htmlCode + "<input type='hidden' value='" + itemsList[i].id +
+                                            "' id='itemIdInp'>";
+                                        htmlCode = htmlCode + "<h6 class='card-title' style='height: 50px'>" +
+                                            itemsList[i].name + "</h6>";
+                                        htmlCode = htmlCode + "<div class='row' style='height: 100px'>";
+                                            htmlCode = htmlCode + `<img src='/${itemsList[i].name
+                                            + itemsList[i].id}.jpg' class='img-fluid' style='max-height: 100%; max-width: 100%; object-fit: contain;'>`;
+                                        htmlCode = htmlCode + "</div>";
+                                    htmlCode = htmlCode + "</div>";
+                                    htmlCode = htmlCode + "<div class='container' style='height: 230px'>";
+                                        htmlCode = htmlCode + "<p class='card-title' style='font-weight: bold; " +
+                                            "font-size: small'>" + itemsList[i].category.name + "</p>";
+                                        htmlCode = htmlCode + "<p class='card-text' style='font-size: small'>" +
+                                            itemsList[i].description + "</p>";
+                                    htmlCode = htmlCode + "</div>";
+                                    htmlCode = htmlCode + "<div class='container' style='height: 200px'>";
+                                        htmlCode = htmlCode + "<h6 class='card-title' style='color: grey'>" +
+                                            'Цена: KZT' + ' ' + itemsList[i].price.toLocaleString('ru') + "</h6>";
+                                        htmlCode = htmlCode + "<span class='card-discount'>" + 'Скидка:' + ' ' +
+                                            "<span style='color: red'>" + itemsList[i].discount + '%' + "</span>" + "</span>";
+                                        htmlCode = htmlCode + "<h6 class='card-title' style='color: green'>" +
+                                            'Итоговая цена: KZT' + ' ' + itemsList[i].discountPrice.toLocaleString('ru') + "</h6>";
+                                        htmlCode = htmlCode + `<a class='btn btn-primary btn-sm mt-auto'
+                                            href='${getDetailsUrl(itemsList[i].id)}' style='width: 150px'>ПОДРОБНЕЕ</a>`;
+                                        htmlCode = htmlCode + "<button class='btn btn-warning btn-sm mt-auto' " +
+                                            "onclick='addToOrder(event)' style='width: 150px'>" + 'В КОРЗИНУ' + "</button>";
+                                    htmlCode = htmlCode + "</div>";
+                                htmlCode = htmlCode + "</div>";
+                            htmlCode = htmlCode + "</div>";
+                            let newDiv = document.createElement('div');
+                            newDiv.innerHTML = htmlCode;
+                            newDiv.classList.add('col-md-4');
+                            target.append(newDiv);
+                        }
+                    }
+                };
+                request.open("GET", "/api");
+                request.send();
+            }
+            function getDetailsUrl(itemId) {
+                const userType = getUserType();
+                if (userType === 'admin') {
+                    return '/main/details/' + itemId;
+                } else {
+                    return '/main/details-user/' + itemId;
+                }
+            }
+            function getUserType() {
+                const userEmail = document.getElementById("userEmail").value;
+                if (userEmail === 'admin@gmail.com') {
+                    return 'admin';
+                } else {
+                    return 'user';
+                }
+            }
+        </script>
+<!--AJAX-POST-->
+        <script>
+            function addToOrder(event) {
+                const request = new XMLHttpRequest();
+                request.onreadystatechange = function () {
+                    if (this.readyState === request.DONE && this.status == 200) {
+                        window.location.href="/main/home";
+                        alert("Товар добавлен в корзину");
+                    }
+                };
+                const userEmail = document.getElementById("userEmail").value;
+                const itemId = event.target.closest('.target').querySelector("#itemIdInp");
+                let requestBody = {
+                    "item": {
+                        "id" : itemId.value,
+                    },
+                    "email": userEmail,
+                };
+                var csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                request.open("POST", "/order");
+                request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                request.setRequestHeader(csrfHeader, csrfToken);
+                request.send(JSON.stringify(requestBody));
+            }
+        </script>
+    </div>
+</html>

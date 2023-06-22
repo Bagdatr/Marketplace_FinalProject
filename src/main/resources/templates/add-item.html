@@ -1,0 +1,73 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layout/main.html">
+
+    <div class="container" layout:fragment="page-content">
+        <div class="container">
+            <div class="row mt-3">
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">НАЗВАНИЕ ТОВАРА:</label>
+                    <input type="text" class="form-control" name="name" id="itemNameInp">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">КАТЕГОРИЯ:</label>
+                    <select class="form-control" name="category" id="itemCategoryInp">
+                        <option>Выберите категорию</option>
+                        <option th:each="category:${categoriesList}" th:text="${category.name}"
+                                th:value="${category.id}"></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">ОПИСАНИЕ:</label>
+                    <textarea type="text" class="form-control" name="description" id="itemDescriptionInp"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">ЦЕНА:</label>
+                    <input type="number" class="form-control" name="price" id="itemPriceInp">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">СКИДКА (%):</label>
+                    <input type="number" class="form-control" name="discount" id="itemDiscountInp">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">РЕЙТИНГ:</label>
+                    <input type="number" class="form-control" name="rating" id="itemRatingInp" min="1" max="5">
+                </div>
+                <div class="form-group">
+                        <label class="form-label" style="font-weight: bold">КОЛИЧЕСТВО:</label>
+                    <input type="number" class="form-control" name="quantity" id="itemQuantityInp">
+                </div>
+                <p></p>
+                <div class="form-group">
+                    <button class="btn btn-success" onclick="addPost()">ДОБАВИТЬ ТОВАР</button>
+                </div>
+            </div>
+        </div>
+<!--AJAX-POST-->
+        <script>
+            function addPost() {
+                const request = new XMLHttpRequest();
+                request.onreadystatechange = function () {
+                    if (this.readyState === request.DONE && this.status == 200) {
+                        window.location.href="/main/add-item";
+                        alert("Товар успешно добавлен");
+                    }
+                };
+                let requestBody = {
+                    "name": itemNameInp.value,
+                    "category" : {"id" : itemCategoryInp.value},
+                    "description": itemDescriptionInp.value,
+                    "price": itemPriceInp.value,
+                    "discount": itemDiscountInp.value,
+                    "rating": itemRatingInp.value,
+                    "quantity": itemQuantityInp.value};
+                var csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                request.open("POST", "/api");
+                request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                request.setRequestHeader(csrfHeader, csrfToken);
+                request.send(JSON.stringify(requestBody));
+            }
+        </script>
+    </div>
+</html>

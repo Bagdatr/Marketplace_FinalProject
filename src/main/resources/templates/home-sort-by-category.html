@@ -1,0 +1,75 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="layout/main.html">
+
+    <div class="container" layout:fragment="page-content">
+        <div class="row">
+<!--Category-menu-->
+            <div class="col-3">
+                <div th:insert="layout/category-menu.html"></div>
+            </div>
+<!--Items-list-->
+            <div class="col-9" style="min-height: 450px">
+                <div class="row target">
+                    <input type="hidden" th:value="${#authentication.principal.email}" id="userEmail" name="userEmail">
+                    <div class="col-md-4" th:each="it:${itemsList}">
+                        <div class="card mt-3 card-body d-flex flex-column" style="height: 600px">
+                            <div class="container" style="height: 170px">
+                                <input type="hidden" th:value="${it.id}" id="itemIdInp">
+                                <h6 class="card-title" style="height: 50px" th:text="${it.name}"></h6>
+                                <div class="row" style="height: 100px">
+                                    <img th:src="@{'/' + ${it.name + it.id} + '.jpg'}" class='img-fluid'
+                                         style='max-height: 100%; max-width: 100%; object-fit: contain;'>
+                                </div>
+                            </div>
+                            <div class="container" style="height: 230px">
+                                <h6 class="card-title" style='font-weight: bold; font-size: small'
+                                    th:text="${it.category.name}"></h6>
+                                <p class="card-text" style='font-size: small' th:text="${it.description}"></p>
+                            </div>
+                            <div class="container" style="height: 200px">
+                                <h6 class="card-title" style="color: grey" th:text="'Цена: KZT ' + ${it.price}"></h6>
+                                <span class="card-discount" th:text="'Скидка: ' + ${it.discount} + '%'"></span>
+                                <h6 class="card-title" style="color: green" th:text="'Итоговая цена: KZT ' + ${it.discountPrice}">
+                                </h6>
+                                <a class="btn btn-primary btn-sm mt-auto" th:href="'/main/details/' + ${it.id}"
+                                   style="width: 150px" sec:authorize="hasAnyRole('ROLE_ADMIN')">ПОДРОБНЕЕ</a>
+                                <a class="btn btn-primary btn-sm mt-auto" th:href="'/main/details-user/' + ${it.id}"
+                                   style="width: 150px" sec:authorize="hasAnyRole('ROLE_USER')">ПОДРОБНЕЕ</a>
+                                <button class="btn btn-warning btn-sm mt-auto" onclick='addToOrder(event)' style="width: 150px"
+                                        type="submit">В КОРЗИНУ</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+<!--AJAX-POST-->
+        <script>
+            function addToOrder(event) {
+                const request = new XMLHttpRequest();
+                request.onreadystatechange = function () {
+                    if (this.readyState === request.DONE && this.status == 200) {
+                        window.location.href="/main/home";
+                        alert("Товар добавлен в корзину");
+                    }
+                };
+                const userEmail = document.getElementById("userEmail").value;
+                const itemId = event.target.closest('.target').querySelector("#itemIdInp");
+                let requestBody = {
+                    "item": {
+                        "id" : itemId.value,
+                    },
+                    "email": userEmail,
+                };
+                var csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                request.open("POST", "/order");
+                request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                request.setRequestHeader(csrfHeader, csrfToken);
+                request.send(JSON.stringify(requestBody));
+            }
+        </script>
+    </div>
+</html>

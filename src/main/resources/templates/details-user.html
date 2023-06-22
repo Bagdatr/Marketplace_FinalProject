@@ -1,0 +1,122 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layout/main.html">
+
+    <div class="container" layout:fragment="page-content">
+        <div class="container">
+            <div class="row mt-3">
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">НАЗВАНИЕ ТОВАРА:</label>
+                    <input type="text" readonly="readonly" class="form-control" name="name"
+                           id="itemNameInp" th:value="${itemDetails.getName()}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">КАТЕГОРИЯ:</label>
+                    <input type="text" readonly="readonly" class="form-control"
+                           th:value="${itemDetails.getCategory().name}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">ОПИСАНИЕ:</label>
+                    <textarea type="text" readonly="readonly"  class="form-control" name="description"
+                              id="itemDescriptionInp"
+                              th:text="${itemDetails.getDescription()}"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">ЦЕНА:</label>
+                    <input type="number" readonly="readonly" class="form-control" name="price" id="itemPriceInp"
+                           th:value="${itemDetails.getPrice()}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">СКИДКА (%):</label>
+                    <input type="number" readonly="readonly"  class="form-control" name="discount" id="itemDiscountInp"
+                           th:value="${itemDetails.getDiscount()}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">ИТОГОВАЯ ЦЕНА:</label>
+                    <input type="number" readonly="readonly" class="form-control" name="discountPrice"
+                           id="itemDiscountPriceInp"
+                           th:value="${itemDetails.getDiscountPrice()}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">РЕЙТИНГ:</label>
+                    <input type="text" readonly="readonly"  class="form-control" name="rating" id="itemRatingInp"
+                           th:value="${itemDetails.rating == 1 ? '&#9733;&#9734;&#9734;&#9734;&#9734;' :
+                           (itemDetails.rating == 2 ? '&#9733;&#9733;&#9734;&#9734;&#9734;' :
+                           (itemDetails.rating == 3 ? '&#9733;&#9733;&#9733;&#9734;&#9734;' :
+                           (itemDetails.rating == 4 ? '&#9733;&#9733;&#9733;&#9733;&#9734;' :
+                           (itemDetails.rating == 5 ? '&#9733;&#9733;&#9733;&#9733;&#9733;' : ''))))}"  >
+                </div>
+
+            </div>
+            <p></p>
+            <div class="row">
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: bold">КОММЕНТАРИИ:</label>
+                    <input type="hidden" th:value="${#authentication.principal.fullName}" name="authorName"
+                           id="authorNameInp">
+                    <input type="hidden" th:value="${itemDetails.getId()}" name="itemId" id="itemIdInp">
+                    <textarea type="text" class="form-control" name="commentText" id="commentTextInp"></textarea>
+                </div>
+                <p></p>
+                <div class="form-group">
+                    <button class="btn btn-success" onclick="addCommentPost()">ОТПРАВИТЬ</button>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row target">
+            </div>
+        </div>
+<!--AJAX-GET-->
+        <script>
+            loadContent();
+            function loadContent() {
+                const request = new XMLHttpRequest();
+                request.onreadystatechange = function () {
+                    if (this.readyState === request.DONE && this.status == 200) {
+                        let commentsList = JSON.parse(request.responseText);
+                        const target = document.querySelector('.target');
+                        for (let i = 0; i < commentsList.length; i++) {
+                            let htmlCode = "";
+                            htmlCode = htmlCode + "<div class='card mt-3'>";
+                            htmlCode = htmlCode + "<h6 class='card-title'>" + commentsList[i].author + "</h6>";
+                            htmlCode = htmlCode + "<p class='card-text'>" + commentsList[i].text + "</p>";
+                            htmlCode = htmlCode + "<p class='card-text' style='font-size: small'>" +
+                                commentsList[i].date + "</p>";
+                            htmlCode = htmlCode + "</div>";
+                            let newDiv = document.createElement('div');
+                            newDiv.innerHTML = htmlCode;
+                            newDiv.classList.add('col-md-12')
+                            target.append(newDiv);
+                        }
+                    }
+                };
+                request.open("GET", "/comment/" + itemIdInp.value);
+                request.send();
+            }
+        </script>
+<!--AJAX-POST-->
+        <script>
+            function addCommentPost() {
+                const request = new XMLHttpRequest();
+                request.onreadystatechange = function () {
+                    if (this.readyState === request.DONE && this.status == 200) {
+                        window.location.href="/main/details-user/" + itemIdInp.value;
+                    }
+                };
+                let requestBody = {
+                    "author": authorNameInp.value,
+                    "item": {
+                        "id" : itemIdInp.value
+                    },
+                    "text" : commentTextInp.value};
+                var csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                request.open("POST", "/comment");
+                request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                request.setRequestHeader(csrfHeader, csrfToken);
+                request.send(JSON.stringify(requestBody));
+            }
+        </script>
+    </div>
+</html>

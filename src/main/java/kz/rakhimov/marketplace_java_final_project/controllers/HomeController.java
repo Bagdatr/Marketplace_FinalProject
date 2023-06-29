@@ -49,7 +49,7 @@ public class HomeController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_USER')")
     @GetMapping(value="/home-search")
     public String openSearch(Model model,
-                             @RequestParam(name="name-search") String name){
+                             @RequestParam(name="key") String name){
         List<ItemDto> itemsList = itemService.findAllItemSearch(name);
         model.addAttribute("itemsList", itemsList);
         List<CategoryDto> categoryList = categoryService.getAllCategories();

@@ -11,7 +11,7 @@
             </div>
 <!--Items-list-->
             <div class="col-9" style="min-height: 450px">
-                <div class="row target">
+                <div class="row target mt-3">
                     <input type="hidden" th:value="${#authentication.principal.email}" id="userEmail" name="userEmail">
                     <div class="col-md-4" th:each="it:${itemsList}">
                         <div class="card mt-3 card-body d-flex flex-column" style="height: 600px">
@@ -33,12 +33,14 @@
                                 <span class="card-discount" th:text="'Скидка: ' + ${it.discount} + '%'"></span>
                                 <h6 class="card-title" style="color: green"
                                     th:text="'Итоговая цена: KZT ' + ${it.discountPrice}"></h6>
+                                <p></p>
                                 <a class="btn btn-primary btn-sm mt-auto"
                                    th:href="'/main/details/' + ${it.id}"
                                    style="width: 150px" sec:authorize="hasAnyRole('ROLE_ADMIN')">ПОДРОБНЕЕ</a>
                                 <a class="btn btn-primary btn-sm mt-auto"
                                    th:href="'/main/details-user/' + ${it.id}" style="width: 150px"
                                    sec:authorize="hasAnyRole('ROLE_USER')">ПОДРОБНЕЕ</a>
+                                <p></p>
                                 <button class="btn btn-warning btn-sm mt-auto" onclick='addToOrder(event)'
                                         style="width: 150px" type="submit">В КОРЗИНУ</button>
                             </div>

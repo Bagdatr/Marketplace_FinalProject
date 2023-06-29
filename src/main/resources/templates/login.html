@@ -10,7 +10,7 @@
         }
 
         form {
-            max-width: 300px;
+            max-width: 600px;
         }
     </style>
 </head>
@@ -18,7 +18,7 @@
 <body>
 <div class="container">
     <div class="row mt-5" layout:fragment="page-content">
-        <form th:action="@{'/sign-in'}" method="post">
+        <form th:action="@{'/sign-in'}" method="post" style="width: 400px;">
             <div class="form-group">
                 <label class="form-label" style="font-weight: bold">EMAIL:</label>
                 <input type="email" class="form-control" name="user-email">

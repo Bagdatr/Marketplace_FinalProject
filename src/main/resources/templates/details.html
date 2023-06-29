@@ -3,8 +3,8 @@
       layout:decorate="layout/main.html">
 
     <div class="container" layout:fragment="page-content">
-        <div class="container">
-            <div class="row mt-3">
+        <div class="container d-flex" style="justify-content: center">
+            <div class="row mt-3 col-8">
                 <form th:action="@{'/main/upload-file'}" method="post" enctype="multipart/form-data">
                     <div class="form-group">
                         <label class="form-label" style="font-weight: bold">НАЗВАНИЕ ТОВАРА:</label>
@@ -59,8 +59,8 @@
             </div>
         </div>
         <p></p>
-        <div class="container">
-            <div class="row target">
+        <div class="container d-flex" style="justify-content: center">
+            <div class="row target col-8">
             </div>
         </div>
 <!--AJAX-GET-->
@@ -74,7 +74,7 @@
                         const target = document.querySelector('.target');
                         for (let i = 0; i < commentsList.length; i++) {
                             let htmlCode = "";
-                            htmlCode = htmlCode + "<div class='card mt-3 target'>";
+                            htmlCode = htmlCode + "<div class='card mt-3 target card-body d-flex flex-column'>";
                             htmlCode = htmlCode + "<input type='hidden' value='" + commentsList[i].id + "' " +
                                 "id='commentIdInp' class='card mt-3'>";
                             htmlCode = htmlCode + "<h6 class='card-title'>" + commentsList[i].author + "</h6>";

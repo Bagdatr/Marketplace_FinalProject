@@ -10,7 +10,7 @@
             </div>
 <!--Items-list-->
             <div class="col-9" style="min-height: 450px">
-                <div class="row target">
+                <div class="row target mt-3">
                     <input type="hidden" th:value="${#authentication.principal.email}" id="userEmail" name="userEmail">
                 </div>
             </div>
@@ -52,8 +52,10 @@
                                             "<span style='color: red'>" + itemsList[i].discount + '%' + "</span>" + "</span>";
                                         htmlCode = htmlCode + "<h6 class='card-title' style='color: green'>" +
                                             'Итоговая цена: KZT' + ' ' + itemsList[i].discountPrice.toLocaleString('ru') + "</h6>";
+                                        htmlCode = htmlCode + "<p>"+"</p>";
                                         htmlCode = htmlCode + `<a class='btn btn-primary btn-sm mt-auto'
                                             href='${getDetailsUrl(itemsList[i].id)}' style='width: 150px'>ПОДРОБНЕЕ</a>`;
+                                        htmlCode = htmlCode + "<p>"+"</p>";
                                         htmlCode = htmlCode + "<button class='btn btn-warning btn-sm mt-auto' " +
                                             "onclick='addToOrder(event)' style='width: 150px'>" + 'В КОРЗИНУ' + "</button>";
                                     htmlCode = htmlCode + "</div>";
